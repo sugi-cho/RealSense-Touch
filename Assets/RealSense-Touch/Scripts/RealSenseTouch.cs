@@ -18,12 +18,9 @@ public class RealSenseTouch : MonoBehaviour
     Camera cam { get { if (_c == null) _c = GetComponentInChildren<Camera>(); return _c; } }
     Camera _c;
 
-    CCL cclProcessor;
-
     // Use this for initialization
     void Start()
     {
-        cclProcessor = GetComponentInChildren<CCL>();
         CreateTex();
     }
 
@@ -48,7 +45,5 @@ public class RealSenseTouch : MonoBehaviour
     {
         if (targetTex == null || targetTex.width != width || targetTex.height != height)
             CreateTex();
-        cclProcessor.Compute(targetTex);
-        targetMat.SetTexture(texName, cclProcessor.output);
     }
 }

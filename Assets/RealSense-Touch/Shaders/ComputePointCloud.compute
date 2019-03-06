@@ -1,0 +1,29 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel buildPointCloud
+
+Texture2D<float> _InfraredTex;
+Texture2D<float2> _RemapTex;
+Texture2D<float> _PosTex;
+
+RWStructuredBuffer<float4> _Output;
+
+int _Width, _Height;
+
+[numthreads(8, 8, 1)]
+void buildPointCloud(uint3 id : SV_DispatchThreadID)
+{
+    uint idx = id.x + id.y * _Width;
+
+    float4 o = (float4) 0;
+
+    uint2 posIdx = id.xy * uint2(3, 1);
+    o.x = _PosTex[posIdx + uint2(0, 0)];
+    o.y = -_PosTex[posIdx + uint2(1, 0)];
+    o.z = _PosTex[posIdx + uint2(2, 0)];
+
+    float2 uv = _RemapTex[id.xy];
+    o.w = _InfraredTex[uint2(floor(uv.x * _Width), floor(uv.y * _Height))];
+    //o.w = uv.x;
+
+    _Output[idx] = o;
+}
