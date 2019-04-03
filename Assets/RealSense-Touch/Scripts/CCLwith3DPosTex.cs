@@ -12,7 +12,6 @@ public class CCLwith3DPosTex : MonoBehaviour
     public int numPerLabel = 128;
 
     public Material souceToInput;
-    public Material visualizer;
     public Material blobMat;
 
     public Camera blobDrawer;
@@ -31,6 +30,7 @@ public class CCLwith3DPosTex : MonoBehaviour
 
     [SerializeField] uint[] args;
     [SerializeField] PosData[] posData;
+    [SerializeField] PosDataEvent onTouchEvent;
 
     Mesh quad
     {
@@ -168,6 +168,8 @@ public class CCLwith3DPosTex : MonoBehaviour
         ComputeBuffer.CopyCount(labelAppendBuffer, labelArgBuffer, sizeof(uint));
         labelArgBuffer.GetData(args);
         accumePosDataBuffer.GetData(posData);
+
+        onTouchEvent.Invoke(posData);
     }
 
     Vector4 prop;
@@ -189,7 +191,7 @@ public class CCLwith3DPosTex : MonoBehaviour
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
         Graphics.Blit(source, inputTex, souceToInput);
-        visualizer.SetTexture("_LabelTex", labelTex);
+        Graphics.Blit(source, posTex);
         Graphics.Blit(source, destination);
     }
 
@@ -199,4 +201,7 @@ public class CCLwith3DPosTex : MonoBehaviour
             if (0 < posData[i].size)
                 Gizmos.DrawSphere(posData[i].pos, 0.1f);
     }
+
+    [System.Serializable]
+    public class PosDataEvent : UnityEngine.Events.UnityEvent<PosData[]> { }
 }
