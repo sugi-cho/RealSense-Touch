@@ -4,7 +4,8 @@
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
@@ -24,7 +25,8 @@ MonoBehaviour:
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
@@ -32,21 +34,22 @@ MonoBehaviour:
   m_Name: RsTemporalFilter
   m_EditorClassIdentifier: 
   enabled: 1
-  _filterSmoothAlpha: 1
-  _filterSmoothDelta: 100
-  _temporalPersistence: 8
+  _filterSmoothAlpha: 0.44
+  _filterSmoothDelta: 46
+  _temporalPersistence: 7
 --- !u!114 &114189879441361140
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 70a93f62582029d4aab3757e6e2fcaf2, type: 3}
   m_Name: RsColorizer
   m_EditorClassIdentifier: 
-  enabled: 1
+  enabled: 0
   visualPreset: 0
   colorScheme: 0
   histogramEqualization: 1
@@ -56,20 +59,22 @@ MonoBehaviour:
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 18bce048bd313fc40b6eb0a08d7f83ab, type: 3}
   m_Name: RsDisparityTransform
   m_EditorClassIdentifier: 
-  enabled: 1
+  enabled: 0
   Mode: 0
 --- !u!114 &114401103692956310
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
@@ -80,40 +85,43 @@ MonoBehaviour:
   _filterMagnitude: 5
   _filterSmoothAlpha: 1
   _filterSmoothDelta: 50
-  _holeFillingMode: 5
+  _holeFillingMode: 0
 --- !u!114 &114476060953143426
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ab8658da5fac1924385546d4cfccbea4, type: 3}
   m_Name: RsDecimationFilter
   m_EditorClassIdentifier: 
-  enabled: 1
-  StreamFilter: 0
-  FormatFilter: 0
+  enabled: 0
+  _streamFilter: 1
+  _formatFilter: 1
   _filterMagnitude: 2
 --- !u!114 &114544001719900210
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 18bce048bd313fc40b6eb0a08d7f83ab, type: 3}
   m_Name: RsDisparityTransform
   m_EditorClassIdentifier: 
-  enabled: 1
+  enabled: 0
   Mode: 1
 --- !u!114 &114894276943703578
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
@@ -122,18 +130,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enabled: 1
   TextureStream: 1
-  TextureFormat: 5
+  TextureFormat: 1
   _occlusionRemoval: 0
 --- !u!114 &114947088938950326
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a370b019fb25fbe4384bc45033197fcd, type: 3}
   m_Name: RsHoleFillingFilter
   m_EditorClassIdentifier: 
-  enabled: 1
+  enabled: 0
   _holesFill: 2

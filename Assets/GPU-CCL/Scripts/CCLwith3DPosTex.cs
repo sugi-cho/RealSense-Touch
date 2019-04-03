@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CCL : MonoBehaviour
+public class CCLwith3DPosTex : MonoBehaviour
 {
     public ComputeShader cclCompute;
 
@@ -18,18 +18,19 @@ public class CCL : MonoBehaviour
     public Camera blobDrawer;
     MaterialPropertyBlock mpb;
 
+    [SerializeField] RenderTexture posTex;
     [SerializeField] RenderTexture inputTex;
     [SerializeField] RenderTexture labelTex;
 
     ComputeBuffer labelFlgBuffer;
     ComputeBuffer labelAppendBuffer;
     ComputeBuffer labelArgBuffer;
-    ComputeBuffer labelDataAppendBuffer;
-    ComputeBuffer labelDataBuffer;
-    ComputeBuffer accumeLabelDataBuffer;
+    ComputeBuffer posDataAppendBuffer;
+    ComputeBuffer posDataBuffer;
+    ComputeBuffer accumePosDataBuffer;
 
     [SerializeField] uint[] args;
-    [SerializeField] LabelData[] labelData;
+    [SerializeField] PosData[] posData;
 
     Mesh quad
     {
@@ -47,14 +48,18 @@ public class CCL : MonoBehaviour
     Mesh _q;
 
     [System.Serializable]
-    public struct LabelData
+    public struct PosData
     {
         public float size;
-        public Vector2 pos;
+        public Vector3 pos;
     }
 
     private void Start()
     {
+        posTex = new RenderTexture(width, height, 16, RenderTextureFormat.ARGBFloat);
+        posTex.Create();
+        GetComponentInParent<Camera>().targetTexture = posTex;
+
         inputTex = new RenderTexture(width, height, 16, RenderTextureFormat.R8);
         inputTex.Create();
         labelTex = new RenderTexture(width, height, 0, RenderTextureFormat.RFloat);
@@ -62,15 +67,16 @@ public class CCL : MonoBehaviour
         labelTex.enableRandomWrite = true;
         labelTex.Create();
 
+
         labelFlgBuffer = new ComputeBuffer(width * height, sizeof(int));
         labelAppendBuffer = new ComputeBuffer(numMaxLabels, sizeof(int), ComputeBufferType.Append);
         labelArgBuffer = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
-        labelDataAppendBuffer = new ComputeBuffer(numPerLabel, sizeof(int) * 3, ComputeBufferType.Append);
-        labelDataBuffer = new ComputeBuffer(numPerLabel * numMaxLabels, sizeof(float) * 3);
-        accumeLabelDataBuffer = new ComputeBuffer(numMaxLabels, sizeof(float) * 3);
+        posDataAppendBuffer = new ComputeBuffer(numPerLabel, sizeof(int) * 4, ComputeBufferType.Append);
+        posDataBuffer = new ComputeBuffer(numPerLabel * numMaxLabels, sizeof(float) * 4);
+        accumePosDataBuffer = new ComputeBuffer(numMaxLabels, sizeof(float) * 4);
         args = new uint[] { quad.GetIndexCount(0), 0, 0, 0, 0 };
         labelArgBuffer.SetData(args);
-        labelData = new LabelData[numMaxLabels];
+        posData = new PosData[numMaxLabels];
         mpb = new MaterialPropertyBlock();
 
         InvokeRepeating("DetectBlobs", 1f / 30f, 1f / 30f);
@@ -80,7 +86,7 @@ public class CCL : MonoBehaviour
     {
         new List<RenderTexture>(new[] { inputTex, labelTex })
             .ForEach(rt => rt.Release());
-        new List<ComputeBuffer>(new[] { labelFlgBuffer, labelAppendBuffer, labelArgBuffer, labelDataAppendBuffer, labelDataBuffer, accumeLabelDataBuffer })
+        new List<ComputeBuffer>(new[] { labelFlgBuffer, labelAppendBuffer, labelArgBuffer, posDataAppendBuffer, posDataBuffer, accumePosDataBuffer })
             .ForEach(bf => bf.Dispose());
     }
 
@@ -127,8 +133,8 @@ public class CCL : MonoBehaviour
         cclCompute.SetBuffer(kernel, "labelAppend", labelAppendBuffer);
         cclCompute.Dispatch(kernel, width * height / 8, 1, 1);
 
-        kernel = cclCompute.FindKernel("clearLabelData");
-        cclCompute.SetBuffer(kernel, "labelDataBuffer", labelDataBuffer);
+        kernel = cclCompute.FindKernel("clearPosData");
+        cclCompute.SetBuffer(kernel, "posDataBuffer", posDataBuffer);
         cclCompute.Dispatch(kernel, numPerLabel * numMaxLabels / 8, 1, 1);
 
         for (var i = 0; i < numMaxLabels; i++)
@@ -136,31 +142,32 @@ public class CCL : MonoBehaviour
             cclCompute.SetInt("labelIdx", i);
             cclCompute.SetInt("numPerLabel", numPerLabel);
 
-            labelDataAppendBuffer.SetCounterValue(0);
-            kernel = cclCompute.FindKernel("clearLabelData");
-            cclCompute.SetBuffer(kernel, "labelDataBuffer", labelDataAppendBuffer);
+            posDataAppendBuffer.SetCounterValue(0);
+            kernel = cclCompute.FindKernel("clearPosData");
+            cclCompute.SetBuffer(kernel, "posDataBuffer", posDataAppendBuffer);
             cclCompute.Dispatch(kernel, numPerLabel / 8, 1, 1);
 
-            kernel = cclCompute.FindKernel("appendLabelData");
+            kernel = cclCompute.FindKernel("appendPosData");
+            cclCompute.SetTexture(kernel, "posTex", posTex);
             cclCompute.SetBuffer(kernel, "labelBuffer", labelAppendBuffer);
             cclCompute.SetTexture(kernel, "labelTex", labelTex);
-            cclCompute.SetBuffer(kernel, "labelDataAppend", labelDataAppendBuffer);
+            cclCompute.SetBuffer(kernel, "posDataAppend", posDataAppendBuffer);
             cclCompute.Dispatch(kernel, width / 8, height / 8, 1);
 
-            kernel = cclCompute.FindKernel("setLabelData");
-            cclCompute.SetBuffer(kernel, "inLabelDataBuffer", labelDataAppendBuffer);
-            cclCompute.SetBuffer(kernel, "labelDataBuffer", labelDataBuffer);
+            kernel = cclCompute.FindKernel("setPosData");
+            cclCompute.SetBuffer(kernel, "inPosDataBuffer", posDataAppendBuffer);
+            cclCompute.SetBuffer(kernel, "posDataBuffer", posDataBuffer);
             cclCompute.Dispatch(kernel, numPerLabel / 8, 1, 1);
         }
 
-        kernel = cclCompute.FindKernel("buildBlobData");
-        cclCompute.SetBuffer(kernel, "inLabelDataBuffer", labelDataBuffer);
-        cclCompute.SetBuffer(kernel, "labelDataBuffer", accumeLabelDataBuffer);
+        kernel = cclCompute.FindKernel("buildPosData");
+        cclCompute.SetBuffer(kernel, "inPosDataBuffer", posDataBuffer);
+        cclCompute.SetBuffer(kernel, "posDataBuffer", accumePosDataBuffer);
         cclCompute.Dispatch(kernel, 1, numMaxLabels, 1);
 
         ComputeBuffer.CopyCount(labelAppendBuffer, labelArgBuffer, sizeof(uint));
         labelArgBuffer.GetData(args);
-        accumeLabelDataBuffer.GetData(labelData);
+        accumePosDataBuffer.GetData(posData);
     }
 
     Vector4 prop;
@@ -173,7 +180,7 @@ public class CCL : MonoBehaviour
         prop.z = blobDrawer.orthographicSize;
         prop.w = blobDrawer.aspect * prop.z;
         mpb.SetVector("_Prop", prop);
-        mpb.SetBuffer("_LabelBuffer", accumeLabelDataBuffer);
+        mpb.SetBuffer("_LabelBuffer", accumePosDataBuffer);
         Graphics.DrawMeshInstancedIndirect(
             quad, 0, blobMat, quad.bounds, labelArgBuffer, 0, mpb,
             UnityEngine.Rendering.ShadowCastingMode.Off, false, 0, blobDrawer);
@@ -183,6 +190,13 @@ public class CCL : MonoBehaviour
     {
         Graphics.Blit(source, inputTex, souceToInput);
         visualizer.SetTexture("_LabelTex", labelTex);
-        Graphics.Blit(source, destination, visualizer);
+        Graphics.Blit(source, destination);
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        for (var i = 0; i < posData.Length; i++)
+            if (0 < posData[i].size)
+                Gizmos.DrawSphere(posData[i].pos, 0.1f);
     }
 }

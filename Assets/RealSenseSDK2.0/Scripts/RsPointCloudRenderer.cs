@@ -50,13 +50,6 @@ public class RsPointCloudRenderer : MonoBehaviour
         };
         GetComponent<MeshRenderer>().sharedMaterial.SetTexture("_UVMap", uvmap);
 
-        if (mesh != null)
-            mesh.Clear();
-        else
-            mesh = new Mesh()
-            {
-                indexFormat = IndexFormat.UInt32,
-            };
 
         vertices = new Vector3[width * height];
         if (handle.IsAllocated)
@@ -64,10 +57,33 @@ public class RsPointCloudRenderer : MonoBehaviour
         handle = GCHandle.Alloc(vertices, GCHandleType.Pinned);
         verticesPtr = handle.AddrOfPinnedObject();
 
-        var indices = new int[vertices.Length];
-        for (int i = 0; i < vertices.Length; i++)
-            indices[i] = i;
+        var indices  = new int[(width - 1) * (height - 1) * 6];
 
+        for (var y = 0; y < height - 1; y++)
+            for (var x = 0; x < width - 1; x++)
+            {
+                var idx = (y * (width - 1) + x) * 6;
+                var i0 = y * width + x;
+                var i1 = i0 + 1;
+                var i2 = i0 + width;
+                var i3 = i1 + width;
+
+                indices[idx + 0] = i0;
+                indices[idx + 1] = i2;
+                indices[idx + 2] = i3;
+
+                indices[idx + 3] = i0;
+                indices[idx + 4] = i3;
+                indices[idx + 5] = i1;
+            }
+
+        if (mesh != null)
+            mesh.Clear();
+        else
+            mesh = new Mesh()
+            {
+                indexFormat = IndexFormat.UInt32,
+            };
         mesh.MarkDynamic();
         mesh.vertices = vertices;
 
@@ -84,7 +100,7 @@ public class RsPointCloudRenderer : MonoBehaviour
 
         mesh.uv = uvs;
 
-        mesh.SetIndices(indices, MeshTopology.Points, 0, false);
+        mesh.SetIndices(indices, MeshTopology.Triangles, 0, false);
         mesh.bounds = new Bounds(Vector3.zero, Vector3.one * 10f);
 
         GetComponent<MeshFilter>().sharedMesh = mesh;
@@ -194,11 +210,6 @@ public class RsPointCloudRenderer : MonoBehaviour
             }
         }
     }
-
-    //unsafe void MemCpy(IntPtr dest, IntPtr src, int count)
-    //{
-    //    Unity.Collections.LowLevel.Unsafe.UnsafeUtility.MemCpy(dest.ToPointer(), src.ToPointer(), count);
-    //}
 
     [DllImport("msvcrt.dll", EntryPoint = "memcpy", CallingConvention = CallingConvention.Cdecl, SetLastError = false)]
     internal static extern IntPtr memcpy(IntPtr dest, IntPtr src, int count);

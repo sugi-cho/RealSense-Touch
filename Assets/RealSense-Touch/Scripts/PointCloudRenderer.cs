@@ -68,7 +68,7 @@ public class PointCloudRenderer : MonoBehaviour
         if (pointCloudBuffer != null && texture != null && mapTex != null && posTex != null)
         {
             var kernel = pointCloudBuilder.FindKernel("buildPointCloud");
-            pointCloudBuilder.SetTexture(kernel, "_InfraredTex", texture);
+            pointCloudBuilder.SetTexture(kernel, "_Tex", texture);
             pointCloudBuilder.Dispatch(kernel, texture.width / 8, texture.height / 8, 1);
         }
     }

@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Hidden_Binarization
-  m_Shader: {fileID: 4800000, guid: 3595ff0f530230b4bb1439374af5e461, type: 3}
+  m_Name: Unlit_BlobVisualizer
+  m_Shader: {fileID: 4800000, guid: 7485d3a7b25fccf47a6d9ca6a612ced6, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -23,6 +23,5 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    m_Floats:
-    - _Threshold: 0.95
+    m_Floats: []
     m_Colors: []

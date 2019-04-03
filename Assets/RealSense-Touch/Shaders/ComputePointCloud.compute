@@ -1,7 +1,7 @@
 ﻿// Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel buildPointCloud
 
-Texture2D<float> _InfraredTex;
+Texture2D<float3> _Tex;
 Texture2D<float2> _RemapTex;
 Texture2D<float> _PosTex;
 
@@ -22,7 +22,7 @@ void buildPointCloud(uint3 id : SV_DispatchThreadID)
     o.z = _PosTex[posIdx + uint2(2, 0)];
 
     float2 uv = _RemapTex[id.xy];
-    o.w = _InfraredTex[uint2(floor(uv.x * _Width), floor(uv.y * _Height))];
+    o.w = _Tex[uint2(floor(uv.x * _Width), floor(uv.y * _Height))].g;
     //o.w = uv.x;
 
     _Output[idx] = o;

@@ -1,0 +1,297 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel init
+#pragma kernel columnWiseLabel
+#pragma kernel mergeLabels
+#pragma kernel clearLabelFlag
+#pragma kernel setRootLabel
+#pragma kernel countLabel
+#pragma kernel clearLabelData
+#pragma kernel appendLabelData
+#pragma kernel setLabelData
+#pragma kernel buildBlobData
+
+struct labelData
+{
+    float size;
+    float2 pos;
+};
+
+Texture2D<float> inTex;
+RWTexture2D<float> labelTex;
+uint texWidth;
+uint texHeight;
+uint div;
+uint numMaxLabels;
+uint numPerLabel;
+uint labelIdx;
+
+RWStructuredBuffer<int> labelFlg;
+AppendStructuredBuffer<int> labelAppend;
+AppendStructuredBuffer<labelData> labelDataAppend;
+
+RWStructuredBuffer<int> labelBuffer;
+StructuredBuffer<labelData> inLabelDataBuffer;
+RWStructuredBuffer<labelData> labelDataBuffer;
+
+
+uint2 label2Idx(int label)
+{
+    return uint2(label % texWidth, label / texWidth);
+}
+int idx2Label(uint2 id)
+{
+    return id.x + (id.y * texWidth);
+}
+int getRootLabel(uint2 idx)
+{
+    int label = labelTex[idx];
+    if (idx.x < 0 || texWidth < idx.x || idx.y < 0 || texHeight < idx.y)
+        return label;
+    int label2 = idx2Label(idx);
+
+    uint count = 0;
+    while (label != label2 && count < texHeight)
+    {
+        idx = label2Idx(label);
+        label = labelTex[idx];
+        label2 = idx2Label(idx);
+        count++;
+    }
+    return label;
+}
+
+[numthreads(8, 8, 1)]
+void init(uint3 id : SV_DispatchThreadID)
+{
+    float4 input = inTex[id.xy];
+    int labelIdx = idx2Label(id.xy);
+    labelTex[id.xy] = 0 < input.a ? labelIdx : -1;
+}
+
+[numthreads(8, 1, 1)]
+void columnWiseLabel(uint3 id : SV_DispatchThreadID)
+{
+    uint idx = id.x;
+    for (uint i = 1; i < texHeight; i++)
+    {
+        uint2 id = uint2(idx, i);
+        int label = labelTex[id];
+
+        int connectedLabel = labelTex[id - uint2(0, 1)];
+        if (label != -1 && connectedLabel != -1)
+            labelTex[id] = connectedLabel;
+    }
+}
+
+[numthreads(8, 1, 1)]
+void mergeLabels(uint3 id : SV_DispatchThreadID)
+{
+    uint nBoundary = texWidth / div;
+    uint idx = (id.x % nBoundary) * div + div * 0.5 - 1;
+    if (idx < texWidth - 1)
+    {
+        for (uint i = 0; i < texHeight; i++)
+        {
+            uint2 xy = uint2(idx, i);
+            int label = labelTex[xy];
+
+            uint2 xy2 = uint2(idx + 1, i);
+            int label2 = labelTex[xy2];
+        
+            if (label != -1 && label2 != -1)
+            {
+                label = getRootLabel(xy);
+                label2 = getRootLabel(xy2);
+                uint2 rootIdx = label2Idx(label);
+                uint2 rootIdx2 = label2Idx(label2);
+
+                int merged = min(label, label2);
+                labelTex[rootIdx] = merged;
+                labelTex[rootIdx2] = merged;
+                labelTex[xy] = merged;
+                labelTex[xy2] = merged;
+            }
+        }
+    }
+}
+
+[numthreads(8, 1, 1)]
+void clearLabelFlag(uint3 id : SV_DispatchThreadID)
+{
+    uint idx = id.x;
+    labelFlg[idx] = 0;
+    labelBuffer[idx] = -1;
+}
+
+[numthreads(8, 8, 1)]
+void setRootLabel(uint3 id : SV_DispatchThreadID)
+{
+    uint2 xy = id.xy;
+    
+    int label = labelTex[xy];
+
+    if (label != -1 && (uint) label < texWidth * texHeight)
+    {
+        label = getRootLabel(xy);
+        labelTex[xy] = label;
+        labelFlg[label] = 1;
+    }
+}
+
+[numthreads(8, 1, 1)]
+void countLabel(uint3 id : SV_DispatchThreadID)
+{
+    int label = id.x;
+    int flg = labelFlg[label];
+    if (0 < flg)
+        labelAppend.Append(label);
+}
+
+[numthreads(8, 1, 1)]
+void clearLabelData(uint3 id : SV_DispatchThreadID)
+{
+    labelData ld = labelDataBuffer[id.x];
+    ld.size = 0;
+    ld.pos = 0;
+    labelDataBuffer[id.x] = ld;
+}
+
+[numthreads(8, 8, 1)]
+void appendLabelData(uint3 id : SV_DispatchThreadID)
+{
+    uint2 xy = id.xy;
+    int label = labelBuffer[labelIdx];
+    int isLabel = labelTex[xy] == label && -1 < label;
+    int l1 = labelTex[xy + uint2(-1, 0)] == label;
+    int l2 = labelTex[xy + uint2(1, 0)] == label;
+    int l3 = labelTex[xy + uint2(0, -1)] == label;
+    int l4 = labelTex[xy + uint2(0, 1)] == label;
+
+    int neighbors = l1 + l2 + l3 + l4;
+
+    if (isLabel && neighbors < 3)
+    {
+        labelData ld;
+        ld.size = 1;
+        ld.pos = xy;
+        labelDataAppend.Append(ld);
+    }
+}
+
+[numthreads(8, 1, 1)]
+void setLabelData(uint3 id : SV_DispatchThreadID)
+{
+    uint idx = labelIdx * numPerLabel + id.x;
+    labelDataBuffer[idx] = inLabelDataBuffer[id.x];
+}
+
+#define NUM_PER_LABEL 128
+groupshared labelData accum[NUM_PER_LABEL];
+
+[numthreads(NUM_PER_LABEL, 1, 1)]
+void buildBlobData(uint3 dtid : SV_DispatchThreadID, uint gidx : SV_GroupIndex)
+{
+    accum[gidx] = inLabelDataBuffer[dtid.x + dtid.y * numPerLabel];
+    GroupMemoryBarrierWithGroupSync();
+
+    uint threshold = NUM_PER_LABEL >> 1;
+    while (0 < threshold)
+    {
+        if (gidx < threshold)
+        {
+            accum[gidx].size += accum[gidx + threshold].size;
+            accum[gidx].pos += accum[gidx + threshold].pos;
+        }
+        GroupMemoryBarrierWithGroupSync();
+        threshold = threshold >> 1;
+    }
+    if (gidx == 0)
+    {
+        accum[gidx].pos /= 0 < accum[gidx].size ? accum[gidx].size : 1;
+        labelDataBuffer[dtid.y] = accum[gidx];
+    }
+}
+
+///
+// kernel for 3D PosData
+///
+
+#pragma kernel clearPosData
+#pragma kernel appendPosData
+#pragma kernel setPosData
+#pragma kernel buildPosData
+
+struct posData
+{
+    float size;
+    float3 pos;
+};
+Texture2D<float3> posTex;
+AppendStructuredBuffer<posData> posDataAppend;
+StructuredBuffer<posData> inPosDataBuffer;
+RWStructuredBuffer<posData> posDataBuffer;
+
+[numthreads(8, 1, 1)]
+void clearPosData(uint3 id : SV_DispatchThreadID)
+{
+    posData pd = posDataBuffer[id.x];
+    pd.size = 0;
+    pd.pos = 0;
+    posDataBuffer[id.x] = pd;
+}
+
+[numthreads(8, 8, 1)]
+void appendPosData(uint3 id : SV_DispatchThreadID)
+{
+    uint2 xy = id.xy;
+    int label = labelBuffer[labelIdx];
+    int isLabel = labelTex[xy] == label && -1 < label;
+    int l1 = labelTex[xy + uint2(-1, 0)] == label;
+    int l2 = labelTex[xy + uint2(1, 0)] == label;
+    int l3 = labelTex[xy + uint2(0, -1)] == label;
+    int l4 = labelTex[xy + uint2(0, 1)] == label;
+
+    int neighbors = l1 + l2 + l3 + l4;
+
+    if (isLabel && neighbors < 3)
+    {
+        posData pd;
+        pd.size = 1;
+        pd.pos = posTex[xy].xyz;
+        posDataAppend.Append(pd);
+    }
+}
+
+[numthreads(8, 1, 1)]
+void setPosData(uint3 id : SV_DispatchThreadID)
+{
+    uint idx = labelIdx * numPerLabel + id.x;
+    posDataBuffer[idx] = inPosDataBuffer[id.x];
+}
+
+#define NUM_PER_LABEL 128
+groupshared posData accump[NUM_PER_LABEL];
+
+[numthreads(NUM_PER_LABEL, 1, 1)]
+void buildPosData(uint3 dtid : SV_DispatchThreadID, uint gidx : SV_GroupIndex)
+{
+    accump[gidx] = inPosDataBuffer[dtid.x + dtid.y * numPerLabel];
+    GroupMemoryBarrierWithGroupSync();
+
+    uint threshold = NUM_PER_LABEL >> 1;
+    while (0 < threshold)
+    {
+        if (gidx < threshold)
+        {
+            accump[gidx].size += accump[gidx + threshold].size;
+            accump[gidx].pos += accump[gidx + threshold].pos;
+        }
+        GroupMemoryBarrierWithGroupSync();
+        threshold = threshold >> 1;
+    }
+    if (gidx == 0)
+    {
+        accump[gidx].pos /= 0 < accump[gidx].size ? accump[gidx].size : 1;
+        posDataBuffer[dtid.y] = accump[gidx];
+    }
+}
