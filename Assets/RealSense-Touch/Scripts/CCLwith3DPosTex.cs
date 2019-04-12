@@ -12,10 +12,6 @@ public class CCLwith3DPosTex : MonoBehaviour
     public int numPerLabel = 128;
 
     public Material souceToInput;
-    public Material blobMat;
-
-    public Camera blobDrawer;
-    MaterialPropertyBlock mpb;
 
     [SerializeField] RenderTexture posTex;
     [SerializeField] RenderTexture inputTex;
@@ -31,21 +27,6 @@ public class CCLwith3DPosTex : MonoBehaviour
     [SerializeField] uint[] args;
     [SerializeField] PosData[] posData;
     [SerializeField] PosDataEvent onTouchEvent;
-
-    Mesh quad
-    {
-        get
-        {
-            if (_q == null)
-            {
-                var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
-                _q = go.GetComponent<MeshFilter>().sharedMesh;
-                Destroy(go);
-            }
-            return _q;
-        }
-    }
-    Mesh _q;
 
     [System.Serializable]
     public struct PosData
@@ -70,14 +51,13 @@ public class CCLwith3DPosTex : MonoBehaviour
 
         labelFlgBuffer = new ComputeBuffer(width * height, sizeof(int));
         labelAppendBuffer = new ComputeBuffer(numMaxLabels, sizeof(int), ComputeBufferType.Append);
-        labelArgBuffer = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
+        labelArgBuffer = new ComputeBuffer(1, sizeof(uint), ComputeBufferType.IndirectArguments);
         posDataAppendBuffer = new ComputeBuffer(numPerLabel, sizeof(int) * 4, ComputeBufferType.Append);
         posDataBuffer = new ComputeBuffer(numPerLabel * numMaxLabels, sizeof(float) * 4);
         accumePosDataBuffer = new ComputeBuffer(numMaxLabels, sizeof(float) * 4);
-        args = new uint[] { quad.GetIndexCount(0), 0, 0, 0, 0 };
+        args = new uint[] { 0 };
         labelArgBuffer.SetData(args);
         posData = new PosData[numMaxLabels];
-        mpb = new MaterialPropertyBlock();
 
         InvokeRepeating("DetectBlobs", 1f / 30f, 1f / 30f);
     }
@@ -165,27 +145,11 @@ public class CCLwith3DPosTex : MonoBehaviour
         cclCompute.SetBuffer(kernel, "posDataBuffer", accumePosDataBuffer);
         cclCompute.Dispatch(kernel, 1, numMaxLabels, 1);
 
-        ComputeBuffer.CopyCount(labelAppendBuffer, labelArgBuffer, sizeof(uint));
+        ComputeBuffer.CopyCount(labelAppendBuffer, labelArgBuffer, 0);
         labelArgBuffer.GetData(args);
         accumePosDataBuffer.GetData(posData);
 
         onTouchEvent.Invoke(posData);
-    }
-
-    Vector4 prop;
-    private void Update()
-    {
-        if (blobDrawer == null)
-            return;
-        prop.x = 1f / width;
-        prop.y = 1f / height;
-        prop.z = blobDrawer.orthographicSize;
-        prop.w = blobDrawer.aspect * prop.z;
-        mpb.SetVector("_Prop", prop);
-        mpb.SetBuffer("_LabelBuffer", accumePosDataBuffer);
-        Graphics.DrawMeshInstancedIndirect(
-            quad, 0, blobMat, quad.bounds, labelArgBuffer, 0, mpb,
-            UnityEngine.Rendering.ShadowCastingMode.Off, false, 0, blobDrawer);
     }
 
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
