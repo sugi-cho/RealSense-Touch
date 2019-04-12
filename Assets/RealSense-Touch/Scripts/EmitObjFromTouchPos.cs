@@ -5,7 +5,7 @@ public class EmitObjFromTouchPos : MonoBehaviour
 {
     public GameObject obj;
 
-    public void OnTouchData(CCLwith3DPosTex.PosData[] posData)
+    public void OnTouchData(CCLwith3DPos.PosData[] posData)
     {
         for (var i = 0; i < posData.Length; i++)
             if (0 < posData[i].size)

@@ -311,6 +311,11 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 9
       objectReference: {fileID: 0}
+    - target: {fileID: 5630688795952394850, guid: 627f399c1a8da584d8ffae8fd12ffe8c,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5630688795952394849, guid: 627f399c1a8da584d8ffae8fd12ffe8c,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -554,7 +559,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1736694824}
   - component: {fileID: 1736694823}
-  - component: {fileID: 1736694822}
   - component: {fileID: 1736694821}
   - component: {fileID: 1736694825}
   m_Layer: 0
@@ -591,7 +595,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1736694825}
-        m_MethodName: OnTouchData
+        m_MethodName: OnTouch
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -601,16 +605,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-    m_TypeName: CCLwith3DPosTex+PosDataEvent, RealSenseTouch, Version=0.0.0.0, Culture=neutral,
+    m_TypeName: CCLwith3DPos+PosDataEvent, RealSenseTouch, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
---- !u!81 &1736694822
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1736694820}
-  m_Enabled: 1
 --- !u!20 &1736694823
 Camera:
   m_ObjectHideFlags: 0
@@ -634,7 +630,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0
-  far clip plane: 0.1
+  far clip plane: 1
   field of view: 60
   orthographic: 1
   orthographic size: 1
@@ -676,13 +672,135 @@ MonoBehaviour:
   m_GameObject: {fileID: 1736694820}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: adf73ec956d7e4d42bc48992ce186ac7, type: 3}
+  m_Script: {fileID: 11500000, guid: 4d5396e45aa1c8c408212075fb150101, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  obj: {fileID: 1485545730692884789, guid: 7eb3aaad7941df14f9ff20fa345f4055, type: 3}
+  nMaxPoints: 10
+  minSize: 3
+  maxSize: 64
+  mergeRange: 0.05
+  trackRange: 0.1
+  touchThreshold: 0.5
+  lostDuration: 0.2
+  onFindPointer:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: TouchPointManager+TouchPointerEvent, RealSenseTouch, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  onTouchDown:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: TouchPointManager+TouchPointerEvent, RealSenseTouch, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  onTouch:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: TouchPointManager+TouchPointerEvent, RealSenseTouch, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  onTouchUp:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: TouchPointManager+TouchPointerEvent, RealSenseTouch, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  onLostPointer:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: TouchPointManager+TouchPointerEvent, RealSenseTouch, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
 --- !u!4 &1798109161 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5630688795952394849, guid: 627f399c1a8da584d8ffae8fd12ffe8c,
     type: 3}
   m_PrefabInstance: {fileID: 960801428}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2136573267
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2136573271}
+  - component: {fileID: 2136573270}
+  - component: {fileID: 2136573269}
+  - component: {fileID: 2136573268}
+  m_Layer: 9
+  m_Name: ObjForDebug (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!135 &2136573268
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2136573267}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!23 &2136573269
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2136573267}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: afddb69f3cfa36a4099e884eb626f398, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 0
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+--- !u!33 &2136573270
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2136573267}
+  m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &2136573271
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2136573267}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.795, y: 1, z: 2.7}
+  m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

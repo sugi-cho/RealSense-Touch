@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CCLwith3DPosTex : MonoBehaviour
+public class CCLwith3DPos : MonoBehaviour
 {
     public ComputeShader cclCompute;
 
@@ -24,9 +24,10 @@ public class CCLwith3DPosTex : MonoBehaviour
     ComputeBuffer posDataBuffer;
     ComputeBuffer accumePosDataBuffer;
 
+    Camera cam;
     [SerializeField] uint[] args;
     [SerializeField] PosData[] posData;
-    [SerializeField] PosDataEvent onTouchEvent;
+    public PosDataEvent onTouchEvent;
 
     [System.Serializable]
     public struct PosData
@@ -37,6 +38,7 @@ public class CCLwith3DPosTex : MonoBehaviour
 
     private void Start()
     {
+        cam = GetComponent<Camera>();
         posTex = new RenderTexture(width, height, 16, RenderTextureFormat.ARGBFloat);
         posTex.Create();
         GetComponentInParent<Camera>().targetTexture = posTex;
@@ -149,7 +151,7 @@ public class CCLwith3DPosTex : MonoBehaviour
         labelArgBuffer.GetData(args);
         accumePosDataBuffer.GetData(posData);
 
-        onTouchEvent.Invoke(posData);
+        onTouchEvent.Invoke(cam, posData);
     }
 
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
@@ -167,5 +169,10 @@ public class CCLwith3DPosTex : MonoBehaviour
     }
 
     [System.Serializable]
-    public class PosDataEvent : UnityEngine.Events.UnityEvent<PosData[]> { }
+    public class PosDataEvent : UnityEngine.Events.UnityEvent<Camera,PosData[]> { }
+
+    public interface I3DTouchAction
+    {
+        void OnTouch(Camera cam, PosData[] posData);
+    }
 }

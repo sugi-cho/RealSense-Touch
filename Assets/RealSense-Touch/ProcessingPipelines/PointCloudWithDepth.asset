@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: PointCloudWithDepth
   m_EditorClassIdentifier: 
   _processingBlocks:
+  - {fileID: 114132171914481368}
   - {fileID: 114525561114535942}
   - {fileID: 114623838063105966}
   - {fileID: 114344729158305758}
   - {fileID: 114187034189187204}
   - {fileID: 114669041362400026}
-  - {fileID: 114132171914481368}
 --- !u!114 &114132171914481368
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -93,8 +93,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enabled: 1
   _filterMagnitude: 2
-  _filterSmoothAlpha: 0.25
-  _filterSmoothDelta: 30
+  _filterSmoothAlpha: 0.5
+  _filterSmoothDelta: 20
   _holeFillingMode: 0
 --- !u!114 &114669041362400026
 MonoBehaviour:
