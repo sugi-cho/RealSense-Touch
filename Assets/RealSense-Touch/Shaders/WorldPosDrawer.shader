@@ -37,8 +37,8 @@
 				half3 w1 = i[1].wPos;
 				half3 w2 = i[2].wPos;
 
-				half l = dot(w1 - w0, w1 - w0) + dot(w2 - w0, w2 - w0);
-				if (l < .01) {
+				half l = dot(w0 - w1, w0 - w1) + dot(w1 - w2, w1 - w2) + dot(w2 - w0, w2 - w0);
+				if (l < .03) {
 					triStream.Append(i[0]);
 					triStream.Append(i[1]);
 					triStream.Append(i[2]);

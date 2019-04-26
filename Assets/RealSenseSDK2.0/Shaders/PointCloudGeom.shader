@@ -14,7 +14,7 @@
 		{
 			CGPROGRAM
 			#pragma vertex vert
-			//#pragma geometry geom
+			#pragma geometry geom
 			#pragma fragment frag
 			#pragma shader_feature USE_DISTANCE
 			#include "UnityCG.cginc"
@@ -99,9 +99,8 @@
 
 			v2f vert (appdata v)
 			{
-				v.vertex.y *= -1;
 				v2f o;
-				o.vertex = UnityObjectToClipPos(v.vertex);
+				o.vertex = v.vertex;
 				o.uv = v.uv;
 				return o;
 			}

@@ -127,12 +127,6 @@ public class TouchPointManager : MonoBehaviour, CCLwith3DPos.I3DTouchAction
         }
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
     [System.Serializable]
     public class TouchPointerEvent : UnityEvent<TouchPointer> { }
 }

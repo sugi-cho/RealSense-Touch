@@ -12,11 +12,9 @@ public class RealDepthMesh : MonoBehaviour
 {
     public RsFrameProvider pointSource;
 
-    FrameQueue pointQueue;
+    FrameQueue q;
 
     Vector3[] vertices;
-    GCHandle handle;
-    IntPtr verticesPtr;
     Mesh mesh;
 
     // Start is called before the first frame update
@@ -27,52 +25,76 @@ public class RealDepthMesh : MonoBehaviour
     }
     private void OnDestroy()
     {
-        if (pointQueue != null)
-            pointQueue.Dispose();
-        if (handle.IsAllocated)
-            handle.Free();
+        if (q != null)
+            q.Dispose();
     }
 
     void OnStart(PipelineProfile obj)
     {
-        pointQueue = new FrameQueue(1);
-        using (var depth = obj.Streams.FirstOrDefault(s => s.Stream == Stream.Depth) as VideoStreamProfile)
+        q = new FrameQueue(1);
+        using (var depth = obj.Streams.FirstOrDefault(s => s.Stream == Stream.Depth && s.Format == Format.Z16).As<VideoStreamProfile>())
             CreateResources(depth.Width, depth.Height);
         pointSource.OnNewSample += OnNewSample;
     }
-    void OnNewSample(Frame frame)
+    private void OnNewSample(Frame frame)
     {
-        using (var pf = RetrievePointFrame(frame))
-            if (pf != null) pointQueue.Enqueue(pf);
+        if (q == null)
+            return;
+        try
+        {
+            if (frame.IsComposite)
+            {
+                using (var fs = frame.As<FrameSet>())
+                using (var points = fs.FirstOrDefault<Points>(Stream.Depth, Format.Xyz32f))
+                {
+                    if (points != null)
+                    {
+                        q.Enqueue(points);
+                    }
+                }
+                return;
+            }
+
+            if (frame.Is(Extension.Points))
+            {
+                q.Enqueue(frame);
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
     }
     void OnStop()
     {
         pointSource.OnNewSample -= OnNewSample;
-        if (pointQueue != null)
-            pointQueue.Dispose();
-        if (handle.IsAllocated)
-            handle.Free();
+        if (q != null)
+            q.Dispose();
     }
 
     // Update is called once per frame
-    void Update()
+    void LateUpdate()
     {
-        if (pointQueue != null)
-            using (var pf = DequeuePointFrame())
-                if (pf != null)
+        if (q != null)
+        {
+            Points points;
+            if (q.PollForFrame<Points>(out points))
+                using (points)
                 {
-                    if (pf.Count != mesh.vertexCount)
+                    if (points.Count != mesh.vertexCount)
                     {
-                        using (var p = pf.Profile as VideoStreamProfile)
+                        using (var p = points.GetProfile<VideoStreamProfile>())
                             CreateResources(p.Width, p.Height);
                     }
-                    if (pf.VertexData != IntPtr.Zero)
+                    if (points.VertexData != IntPtr.Zero)
                     {
-                        memcpy(verticesPtr, pf.VertexData, pf.Count * sizeof(float) * 3);
+                        points.CopyVertices(vertices);
+
                         mesh.vertices = vertices;
                         mesh.UploadMeshData(false);
                     }
                 }
+        }
     }
 
     Points RetrievePointFrame(Frame frame)
@@ -81,15 +103,10 @@ public class RealDepthMesh : MonoBehaviour
 
         if (frame.IsComposite)
         {
-            using (var fset = FrameSet.FromFrame(frame))
-            {
-                foreach (var f in fset)
-                {
-                    var ret = RetrievePointFrame(f);
-                    if (ret != null) return ret;
-                    f.Dispose();
-                }
-            }
+            using (var fs = frame.As<FrameSet>())
+            using (var points = fs.FirstOrDefault<Points>(Stream.Depth, Format.Xyz32f))
+                if (points != null)
+                    return points;
         }
 
         return null;
@@ -97,16 +114,12 @@ public class RealDepthMesh : MonoBehaviour
     Points DequeuePointFrame()
     {
         Frame frame;
-        return pointQueue.PollForFrame(out frame) ? (Points)frame : null;
+        return q.PollForFrame(out frame) ? (Points)frame : null;
     }
 
     void CreateResources(int width, int height)
     {
         vertices = new Vector3[width * height];
-        if (handle.IsAllocated)
-            handle.Free();
-        handle = GCHandle.Alloc(vertices, GCHandleType.Pinned);
-        verticesPtr = handle.AddrOfPinnedObject();
 
         var indices = new int[(width - 1) * (height - 1) * 6];
 
@@ -159,7 +172,4 @@ public class RealDepthMesh : MonoBehaviour
         var mpb = new MaterialPropertyBlock();
         GetComponent<Renderer>().SetPropertyBlock(mpb);
     }
-
-    [DllImport("msvcrt.dll", EntryPoint = "memcpy", CallingConvention = CallingConvention.Cdecl, SetLastError = false)]
-    internal static extern IntPtr memcpy(IntPtr dest, IntPtr src, int count);
 }
