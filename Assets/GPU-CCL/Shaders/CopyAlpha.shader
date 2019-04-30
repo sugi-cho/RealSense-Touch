@@ -38,11 +38,22 @@
             }
 
             sampler2D _MainTex;
+			half4 _MainTex_TexelSize;
 
             half frag (v2f i) : SV_Target
             {
-                fixed4 col = tex2D(_MainTex, i.uv);
-                return col.a;
+				float duv = _MainTex_TexelSize.xy;
+                half4 col = tex2D(_MainTex, i.uv);
+
+				half4 c0 = tex2D(_MainTex, i.uv + float2(-duv.x, 0));
+				half4 c1 = tex2D(_MainTex, i.uv + float2( duv.x, 0));
+				half4 c2 = tex2D(_MainTex, i.uv + float2(0, -duv.x));
+				half4 c3 = tex2D(_MainTex, i.uv + float2( 0, duv.x));
+
+				half dx = length(c0.xyz - c1.xyz) * c0.a * c1.a;
+				half dy = length(c2.xyz - c3.xyz) * c2.a * c3.a;
+
+				return col.a * (dx < 0.1) * (dy < 0.1);
             }
             ENDCG
         }
