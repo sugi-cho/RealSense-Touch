@@ -41,12 +41,13 @@ public class TouchPointManager : MonoBehaviour, CCLwith3DPos.I3DTouchAction
                 var nears = rawDataList
                     .Select((data, idx) => new { data, idx })
                     .Where(pair => i < pair.idx && 0 < pair.data.size)
-                    .Where(pair => (pair.data.pos - current.pos).sqrMagnitude < mergeRange * mergeRange);
+                    .Where(pair => (pair.data.pos - current.pos).sqrMagnitude < mergeRange * mergeRange)
+                    .ToList();
 
                 var accumPos = current.pos;
-                for (var n = 0; n < nears.Count(); n++)
+                for (var n = 0; n < nears.Count; n++)
                 {
-                    var near = nears.ElementAt(n);
+                    var near = nears[n];
                     var data = near.data;
                     var idx = near.idx;
                     accumPos += data.pos;
@@ -54,8 +55,10 @@ public class TouchPointManager : MonoBehaviour, CCLwith3DPos.I3DTouchAction
                     data.size = 0;
                     rawDataList[idx] = data;
                 }
-                current.pos = accumPos / (nears.Count() + 1);
+                current.pos = accumPos / (nears.Count + 1);
                 rawDataList[i] = current;
+                nears.Clear();
+                nears = null;
             }
         foreach (var p in points)
             p.trackFlg = false;
