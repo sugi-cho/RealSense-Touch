@@ -40,10 +40,12 @@ public class CCLwith3DPos : MonoBehaviour
     {
         cam = GetComponent<Camera>();
         posTex = new RenderTexture(width, height, 16, RenderTextureFormat.ARGBFloat);
+        posTex.filterMode = FilterMode.Point;
         posTex.Create();
         GetComponentInParent<Camera>().targetTexture = posTex;
 
         inputTex = new RenderTexture(width, height, 16, RenderTextureFormat.R8);
+        inputTex.filterMode = FilterMode.Point;
         inputTex.Create();
         labelTex = new RenderTexture(width, height, 0, RenderTextureFormat.RFloat);
         labelTex.filterMode = FilterMode.Point;

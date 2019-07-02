@@ -1,0 +1,160 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8663393359997742745
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8663393359997742741}
+  - component: {fileID: 8663393359997742746}
+  - component: {fileID: 8663393359997742744}
+  - component: {fileID: 8663393359997742740}
+  m_Layer: 0
+  m_Name: SensingArea
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8663393359997742741
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8663393359997742745}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.2, z: 2}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!20 &8663393359997742746
+Camera:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8663393359997742745}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
+  m_projectionMatrixMode: 1
+  m_SensorSize: {x: 36, y: 24}
+  m_LensShift: {x: 0, y: 0}
+  m_GateFitMode: 2
+  m_FocalLength: 50
+  m_NormalizedViewPortRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+  near clip plane: 0
+  far clip plane: 1
+  field of view: 60
+  orthographic: 1
+  orthographic size: 1
+  m_Depth: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 512
+  m_RenderingPath: -1
+  m_TargetTexture: {fileID: 0}
+  m_TargetDisplay: 0
+  m_TargetEye: 3
+  m_HDR: 1
+  m_AllowMSAA: 1
+  m_AllowDynamicResolution: 0
+  m_ForceIntoRT: 0
+  m_OcclusionCulling: 1
+  m_StereoConvergence: 10
+  m_StereoSeparation: 0.022
+--- !u!114 &8663393359997742744
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8663393359997742745}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b37ae74c0d1f8a48a3cdb273d1a3552, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cclCompute: {fileID: 7200000, guid: 57ad023dd0300044d99774c31b17152a, type: 3}
+  width: 512
+  height: 512
+  numMaxLabels: 32
+  numPerLabel: 128
+  souceToInput: {fileID: 2100000, guid: 3505b2b59fe3c7c4b9c92fd8fa7b68cb, type: 2}
+  posTex: {fileID: 0}
+  inputTex: {fileID: 0}
+  labelTex: {fileID: 0}
+  args: 
+  posData: []
+  onTouchEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 8663393359997742740}
+        m_MethodName: OnTouch
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_TypeName: CCLwith3DPos+PosDataEvent, RealSenseTouch, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+--- !u!114 &8663393359997742740
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8663393359997742745}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d5396e45aa1c8c408212075fb150101, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  nMaxPoints: 10
+  minSize: 3
+  maxSize: 64
+  mergeRange: 0.05
+  trackRange: 0.1
+  touchThreshold: 0.5
+  lostDuration: 0.2
+  onFindPointer:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: TouchPointManager+TouchPointerEvent, RealSenseTouch, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  onTouchDown:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: TouchPointManager+TouchPointerEvent, RealSenseTouch, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  onTouch:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: TouchPointManager+TouchPointerEvent, RealSenseTouch, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  onTouchUp:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: TouchPointManager+TouchPointerEvent, RealSenseTouch, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  onLostPointer:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: TouchPointManager+TouchPointerEvent, RealSenseTouch, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null

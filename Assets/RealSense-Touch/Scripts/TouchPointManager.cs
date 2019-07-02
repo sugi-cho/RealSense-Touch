@@ -22,8 +22,11 @@ public class TouchPointManager : MonoBehaviour, CCLwith3DPos.I3DTouchAction
     public TouchPointerEvent onTouchUp;
     public TouchPointerEvent onLostPointer;
 
+    [Header("process all touch pointer")]
+    public TouchPointersEvent onProcessTouchPointers;
+
     TouchPointer[] points;
-    List<CCLwith3DPos.PosData> rawDataList;
+    [SerializeField] List<CCLwith3DPos.PosData> rawDataList;
 
     public void OnTouch(Camera cam, CCLwith3DPos.PosData[] posData)
     {
@@ -113,6 +116,8 @@ public class TouchPointManager : MonoBehaviour, CCLwith3DPos.I3DTouchAction
                 points[i].isTracking = false;
                 onLostPointer.Invoke(points[i]);
             }
+        
+        onProcessTouchPointers.Invoke(points);
     }
 
 
@@ -132,4 +137,6 @@ public class TouchPointManager : MonoBehaviour, CCLwith3DPos.I3DTouchAction
 
     [System.Serializable]
     public class TouchPointerEvent : UnityEvent<TouchPointer> { }
+    [System.Serializable]
+    public class TouchPointersEvent : UnityEvent<TouchPointer[]> { }
 }
